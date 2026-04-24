@@ -8,7 +8,31 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
 // In-memory database for testing
-const portfolios = {};
+const portfolios = {
+  'nirjan': {
+    username: 'nirjan',
+    fullName: 'Nirjan Mondal',
+    tagline: 'Computer Science Undergraduate & Web Developer',
+    profilePicture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop',
+    aboutMe: 'I am a passionate CS student building innovative web solutions. I specialize in React, Node.js, and modern UI design.',
+    showSkills: true,
+    skills: ['React', 'Node.js', 'Express', 'MongoDB', 'Vite', 'Framer Motion'],
+    contact: { showEmail: true, email: 'nirjan@example.com', showPhone: true, phone: '+91 98765 43210' },
+    socials: [
+      { platform: 'GitHub', url: 'https://github.com/Nirjan4102' },
+      { platform: 'LinkedIn', url: 'https://linkedin.com' }
+    ],
+    projects: [
+      { title: 'Portfolio Builder', description: 'A premium platform to build and share professional portfolios.', link: 'https://github.com/Nirjan4102/animated-portfolio-builder' }
+    ],
+    certificates: [],
+    showJourney: true,
+    journey: [
+      { year: '2022', event: 'Started CS Degree' },
+      { year: '2024', event: 'Built Portfolio Platform' }
+    ]
+  }
+};
 
 app.get('/', (req, res) => {
   res.send('Portfolio Builder API is running');

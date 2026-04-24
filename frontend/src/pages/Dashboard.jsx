@@ -56,7 +56,7 @@ export default function Dashboard() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/portfolio', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/portfolio`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData)
       });
       if (response.ok) setShowModal(true);

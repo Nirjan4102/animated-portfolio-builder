@@ -9,7 +9,7 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    fetch(`http://localhost:5000/api/portfolio/${username}`)
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/portfolio/${username}`)
       .then(res => res.ok ? res.json() : null).then(setData).catch(console.error).finally(() => setLoading(false));
   }, [username]);
 
