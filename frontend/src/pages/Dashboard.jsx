@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Copy, ExternalLink, CheckCircle, Plus, Trash2, Image as ImageIcon } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: 'johndoe',
+    username: '',
     fullName: '',
     tagline: '', // e.g., Senior Full Stack Developer
     profilePicture: null,
@@ -22,7 +25,68 @@ export default function Dashboard() {
   
   const [showModal, setShowModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  
+  React.useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login');
+        return;
+      }
+      setUser(session.user);
+      
+      // Fetch portfolio data for this user
+      // We assume username is unique and stored in user_metadata or we just find by user_id
+      // For now, let's look for a portfolio where user_id matches (we should add user_id to table)
+      // OR if we use username from metadata:
+      const userUsername = session.user.user_metadata.username;
+      if (userUsername) {
+        const { data, error } = await supabase
+          .from('portfolios')
+          .select('*')
+          .eq('username', userUsername)
+          .single();
+          
+        if (data) {
+          setFormData({
+            username: data.username,
+            fullName: data.full_name,
+            tagline: data.tagline,
+            profilePicture: data.profile_picture,
+            resumeLink: data.resume_link,
+            aboutMe: data.about_me,
+            showSkills: data.show_skills,
+            skills: data.skills.join(', '),
+            contact: data.contact,
+            socials: data.socials,
+            projects: data.projects,
+            certificates: data.certificates,
+            showJourney: data.show_journey,
+            journey: data.journey
+          });
+        } else {
+          // Initialize with username from metadata if no portfolio found
+          setFormData(prev => ({ ...prev, username: userUsername }));
+        }
+      }
+      setLoading(false);
+    };
+    checkUser();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
   const publicLink = `${window.location.origin}/${formData.username}`;
+  const handleCopy = () => {
+    navigator.clipboard.writeText(publicLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   
@@ -56,16 +120,41 @@ export default function Dashboard() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/portfolio`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData)
-      });
-      if (response.ok) setShowModal(true);
-      else alert('Failed to save portfolio');
+      // Parse skills from comma-separated string to array
+      let parsedSkills = formData.skills;
+      if (typeof parsedSkills === 'string') {
+        parsedSkills = parsedSkills.split(',').map(s => s.trim()).filter(s => s);
+      }
+
+      const { data, error } = await supabase
+        .from('portfolios')
+        .upsert({
+          username: formData.username,
+          full_name: formData.fullName,
+          tagline: formData.tagline,
+          profile_picture: formData.profilePicture,
+          resume_link: formData.resumeLink,
+          about_me: formData.aboutMe,
+          show_skills: formData.showSkills,
+          skills: parsedSkills,
+          contact: formData.contact,
+          socials: formData.socials,
+          projects: formData.projects,
+          certificates: formData.certificates,
+          show_journey: formData.showJourney,
+          journey: formData.journey,
+          updated_at: new Date()
+        }, { onConflict: 'username' });
+
+      if (error) throw error;
+      setShowModal(true);
     } catch (error) {
-      console.error(error);
-      alert('Error connecting to server');
+      console.error('Supabase Error:', error);
+      alert('Error saving to database: ' + (error.message || error));
     }
   };
+
+  if (loading) return <div className="flex-center" style={{ minHeight: '100vh', fontSize: '2rem' }}>Loading Dashboard...</div>;
 
   return (
     <div>
@@ -74,11 +163,14 @@ export default function Dashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
             <h1 style={{ fontSize: '2.5rem' }}>Portfolio Builder</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Craft your professional digital presence</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Welcome back, {user?.user_metadata?.username || 'User'}</p>
           </div>
-          <a href={`/${formData.username}`} target="_blank" rel="noreferrer" className="btn-outline flex-center" style={{ gap: '0.5rem' }}>
-            <ExternalLink size={18} /> Preview Live
-          </a>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button onClick={handleLogout} className="btn-outline" style={{ color: '#ef4444', borderColor: '#ef4444' }}>Logout</button>
+            <a href={`/${formData.username}`} target="_blank" rel="noreferrer" className="btn-outline flex-center" style={{ gap: '0.5rem' }}>
+              <ExternalLink size={18} /> Preview Live
+            </a>
+          </div>
         </div>
 
         <form onSubmit={handleSave} style={{ display: 'grid', gap: '2rem' }}>

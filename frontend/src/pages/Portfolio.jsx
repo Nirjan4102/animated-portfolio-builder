@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, Mail, Phone, Link as LinkIcon, Star, Code, ArrowRight, Download } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 export default function Portfolio() {
   const { username } = useParams();
@@ -9,8 +10,43 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/portfolio/${username}`)
-      .then(res => res.ok ? res.json() : null).then(setData).catch(console.error).finally(() => setLoading(false));
+    const getPortfolio = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('portfolios')
+          .select('*')
+          .eq('username', username)
+          .single();
+        
+        if (error) throw error;
+        
+        // Transform snake_case from DB to camelCase for UI if needed
+        const formattedData = {
+          ...data,
+          fullName: data.full_name,
+          profilePicture: data.profile_picture,
+          resumeLink: data.resume_link,
+          aboutMe: data.about_me,
+          showSkills: data.show_skills,
+          showJourney: data.show_journey,
+          // JSON fields are already objects usually, but good to be safe
+          contact: data.contact,
+          socials: data.socials,
+          projects: data.projects,
+          certificates: data.certificates,
+          journey: data.journey
+        };
+        
+        setData(formattedData);
+      } catch (error) {
+        console.error('Fetch error:', error);
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    getPortfolio();
   }, [username]);
 
   if (loading) return <div className="flex-center" style={{ minHeight: '100vh', fontSize: '2rem' }}>Loading...</div>;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { supabase } from '../supabaseClient';
 
 export default function Login({ isSignup }) {
   const [email, setEmail] = useState('');
@@ -8,11 +9,28 @@ export default function Login({ isSignup }) {
   const [username, setUsername] = useState(''); // Only for signup
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement Supabase Auth
-    console.log('Form submitted:', { email, password, username });
-    navigate('/dashboard'); // Mock redirect
+    try {
+      if (isSignup) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username }
+          }
+        });
+        if (error) throw error;
+        alert('Signup successful! Check your email for verification (if enabled) or proceed to log in.');
+        navigate('/login');
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      alert('Authentication error: ' + error.message);
+    }
   };
 
   return (
