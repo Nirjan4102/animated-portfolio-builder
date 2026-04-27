@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { Copy, ExternalLink, CheckCircle, Plus, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Copy, ExternalLink, CheckCircle, Plus, Trash2, Image as ImageIcon, Layout, Send } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 export default function Dashboard() {
@@ -9,7 +9,7 @@ export default function Dashboard() {
   const [formData, setFormData] = useState({
     username: '',
     fullName: '',
-    tagline: '', // e.g., Senior Full Stack Developer
+    tagline: '',
     profilePicture: null,
     resumeLink: '',
     aboutMe: '',
@@ -37,10 +37,6 @@ export default function Dashboard() {
       }
       setUser(session.user);
       
-      // Fetch portfolio data for this user
-      // We assume username is unique and stored in user_metadata or we just find by user_id
-      // For now, let's look for a portfolio where user_id matches (we should add user_id to table)
-      // OR if we use username from metadata:
       const userUsername = session.user.user_metadata.username;
       if (userUsername) {
         const { data, error } = await supabase
@@ -67,7 +63,6 @@ export default function Dashboard() {
             journey: data.journey
           });
         } else {
-          // Initialize with username from metadata if no portfolio found
           setFormData(prev => ({ ...prev, username: userUsername }));
         }
       }
@@ -120,7 +115,6 @@ export default function Dashboard() {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      // Parse skills from comma-separated string to array
       let parsedSkills = formData.skills;
       if (typeof parsedSkills === 'string') {
         parsedSkills = parsedSkills.split(',').map(s => s.trim()).filter(s => s);
@@ -141,7 +135,7 @@ export default function Dashboard() {
           socials: formData.socials,
           projects: formData.projects,
           certificates: formData.certificates,
-          show_journey: formData.showJourney,
+          show_journey: formData.show_journey,
           journey: formData.journey,
           updated_at: new Date()
         }, { onConflict: 'username' });
@@ -150,42 +144,46 @@ export default function Dashboard() {
       setShowModal(true);
     } catch (error) {
       console.error('Supabase Error:', error);
-      alert('Error saving to database: ' + (error.message || error));
+      alert('Error saving: ' + (error.message || error));
     }
   };
 
-  if (loading) return <div className="flex-center" style={{ minHeight: '100vh', fontSize: '2rem' }}>Loading Dashboard...</div>;
+  if (loading) return <div className="flex-center" style={{ minHeight: '100vh', fontSize: '1.5rem' }}>Loading Editor...</div>;
 
   return (
     <div>
       <Navbar />
-      <main className="container animate-fade-in" style={{ paddingTop: '8rem', paddingBottom: '4rem', maxWidth: '900px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <main className="container animate-fade-in" style={{ paddingTop: '7rem', paddingBottom: '6rem', maxWidth: '900px' }}>
+        
+        {/* Header Section */}
+        <div className="mobile-flex-col" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', gap: '1.5rem' }}>
           <div>
-            <h1 style={{ fontSize: '2.5rem' }}>Portfolio Builder</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Welcome back, {user?.user_metadata?.username || 'User'}</p>
+            <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '0.5rem' }}>Portfolio Builder</h1>
+            <p style={{ color: 'var(--text-secondary)' }}>Editing: <span style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>@{formData.username}</span></p>
           </div>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <button onClick={handleLogout} className="btn-outline" style={{ color: '#ef4444', borderColor: '#ef4444' }}>Logout</button>
-            <a href={`/${formData.username}`} target="_blank" rel="noreferrer" className="btn-outline flex-center" style={{ gap: '0.5rem' }}>
-              <ExternalLink size={18} /> Preview Live
+          <div style={{ display: 'flex', gap: '0.75rem', width: 'auto' }}>
+            <a href={`/${formData.username}`} target="_blank" rel="noreferrer" className="btn-outline flex-center" style={{ gap: '0.5rem', padding: '0.75rem 1.25rem' }}>
+              <ExternalLink size={18} /> <span className="mobile-hide">Preview</span>
             </a>
+            <button onClick={handleLogout} className="btn-outline flex-center" style={{ color: '#ef4444', borderColor: '#ef4444', padding: '0.75rem 1.25rem' }}>
+              <Copy size={18} /> <span className="mobile-hide">Logout</span>
+            </button>
           </div>
         </div>
 
-        <form onSubmit={handleSave} style={{ display: 'grid', gap: '3rem', marginTop: '2rem' }}>
+        <form onSubmit={handleSave} style={{ display: 'grid', gap: '4rem' }}>
           
-          {/* Section 1: Hero Identity */}
+          {/* Section 1: Identity */}
           <section>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800' }}>1</div>
-              <h2 style={{ fontSize: '1.8rem' }}>Identity & Hero</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '0.9rem' }}>1</div>
+              <h2 style={{ fontSize: '1.5rem' }}>Basic Identity</h2>
             </div>
             
-            <div className="glass-panel card-premium" style={{ padding: '3rem', display: 'grid', gap: '2rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
+            <div className="glass-panel" style={{ padding: '2rem', display: 'grid', gap: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
                 <div>
-                  <label className="input-label">Public Username (URL)</label>
+                  <label className="input-label">Username (URL)</label>
                   <div style={{ position: 'relative' }}>
                     <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>/</span>
                     <input type="text" name="username" className="input-field" style={{ paddingLeft: '2rem' }} value={formData.username} onChange={handleChange} required />
@@ -202,55 +200,55 @@ export default function Dashboard() {
                 <input type="text" name="tagline" className="input-field" value={formData.tagline} onChange={handleChange} placeholder="e.g. Senior Full Stack Developer" required />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
-                <div className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
-                  <label className="input-label">Profile Picture</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <label className="btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', cursor: 'pointer' }}>
-                      Choose Photo
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem' }}>
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)' }}>
+                  <label className="input-label">Profile Photo</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <label className="btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', cursor: 'pointer', flex: 1 }}>
+                      Upload
                       <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, (res) => setFormData({ ...formData, profilePicture: res }))} style={{ display: 'none' }} />
                     </label>
-                    {formData.profilePicture && <img src={formData.profilePicture} alt="Preview" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} />}
+                    {formData.profilePicture && <img src={formData.profilePicture} alt="P" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />}
                   </div>
                 </div>
-                <div className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
-                  <label className="input-label">Resume / CV (PDF)</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    <label className="btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', cursor: 'pointer' }}>
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)' }}>
+                  <label className="input-label">Resume (PDF)</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <label className="btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', cursor: 'pointer', flex: 1 }}>
                       Upload CV
                       <input type="file" accept=".pdf" onChange={(e) => handleImageUpload(e, (res) => setFormData({ ...formData, resumeLink: res }))} style={{ display: 'none' }} />
                     </label>
-                    {formData.resumeLink && <CheckCircle size={20} color="#10b981" />}
+                    {formData.resumeLink && <CheckCircle size={18} color="#10b981" />}
                   </div>
                 </div>
               </div>
 
               <div>
                 <label className="input-label">About Me</label>
-                <textarea name="aboutMe" className="input-field" rows="4" value={formData.aboutMe} onChange={handleChange} placeholder="Tell your story..." required></textarea>
+                <textarea name="aboutMe" className="input-field" rows="4" value={formData.aboutMe} onChange={handleChange} placeholder="Tell your professional story..." required></textarea>
               </div>
             </div>
           </section>
 
-          {/* Section 2: Contact & Socials */}
+          {/* Section 2: Connect */}
           <section>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800' }}>2</div>
-              <h2 style={{ fontSize: '1.8rem' }}>Connect & Socials</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '0.9rem' }}>2</div>
+              <h2 style={{ fontSize: '1.5rem' }}>Connect & Socials</h2>
             </div>
             
-            <div className="glass-panel card-premium" style={{ padding: '3rem', display: 'grid', gap: '2rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
-                <div className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <label className="input-label">Email Address</label>
+            <div className="glass-panel" style={{ padding: '2rem', display: 'grid', gap: '2rem' }}>
+              <div className="mobile-grid-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <label className="input-label">Email</label>
                     <input type="checkbox" name="showEmail" checked={formData.contact.showEmail} onChange={(e) => handleNestedChange(e, 'contact')} />
                   </div>
                   <input type="email" name="email" className="input-field" value={formData.contact.email} onChange={(e) => handleNestedChange(e, 'contact')} placeholder="hello@world.com" />
                 </div>
-                <div className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <label className="input-label">Phone Number</label>
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <label className="input-label">Phone</label>
                     <input type="checkbox" name="showPhone" checked={formData.contact.showPhone} onChange={(e) => handleNestedChange(e, 'contact')} />
                   </div>
                   <input type="tel" name="phone" className="input-field" value={formData.contact.phone} onChange={(e) => handleNestedChange(e, 'contact')} placeholder="+1 234..." />
@@ -260,75 +258,73 @@ export default function Dashboard() {
               <div>
                 <label className="input-label">Social Networks</label>
                 {formData.socials.map((social, index) => (
-                  <div key={index} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }} className="animate-fade-in">
-                    <input type="text" name="platform" placeholder="e.g. GitHub" className="input-field" style={{ width: '30%' }} value={social.platform} onChange={(e) => handleArrayChange(index, e, 'socials')} />
-                    <input type="url" name="url" placeholder="Profile URL" className="input-field" style={{ flexGrow: 1 }} value={social.url} onChange={(e) => handleArrayChange(index, e, 'socials')} />
-                    <button type="button" onClick={() => removeArrayItem(index, 'socials')} style={{ color: '#ef4444' }}><Trash2 size={20}/></button>
+                  <div key={index} className="mobile-flex-col animate-fade-in" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                    <input type="text" name="platform" placeholder="Platform" className="input-field" style={{ flex: '0 0 120px' }} value={social.platform} onChange={(e) => handleArrayChange(index, e, 'socials')} />
+                    <input type="url" name="url" placeholder="URL" className="input-field" style={{ flexGrow: 1 }} value={social.url} onChange={(e) => handleArrayChange(index, e, 'socials')} />
+                    <button type="button" onClick={() => removeArrayItem(index, 'socials')} style={{ color: '#ef4444', padding: '0.5rem' }}><Trash2 size={20}/></button>
                   </div>
                 ))}
-                <button type="button" onClick={() => addArrayItem('socials', { platform: '', url: '' })} className="btn-outline flex-center" style={{ gap: '0.5rem', padding: '0.75rem 1.5rem', fontSize: '0.9rem', marginTop: '1rem' }}><Plus size={16}/> Add Network</button>
+                <button type="button" onClick={() => addArrayItem('socials', { platform: '', url: '' })} className="btn-outline flex-center" style={{ gap: '0.5rem', width: '100%', marginTop: '0.5rem' }}><Plus size={16}/> Add Link</button>
               </div>
             </div>
           </section>
 
           {/* Section 3: Projects */}
           <section>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800' }}>3</div>
-              <h2 style={{ fontSize: '1.8rem' }}>Featured Work</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '0.9rem' }}>3</div>
+              <h2 style={{ fontSize: '1.5rem' }}>Projects</h2>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: '1.5rem' }}>
               {formData.projects.map((proj, index) => (
-                <div key={index} className="glass-panel card-premium" style={{ padding: '2rem', display: 'grid', gap: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ fontSize: '1.2rem', color: 'var(--accent-primary)' }}>Project {index + 1}</h3>
-                    <button type="button" onClick={() => removeArrayItem(index, 'projects')} style={{ color: '#ef4444' }}><Trash2 size={18}/></button>
-                  </div>
-                  <input type="text" name="title" placeholder="Project Title" className="input-field" value={proj.title} onChange={(e) => handleArrayChange(index, e, 'projects')} />
-                  <input type="url" name="link" placeholder="Live Demo Link" className="input-field" value={proj.link} onChange={(e) => handleArrayChange(index, e, 'projects')} />
-                  <textarea name="description" placeholder="Short description..." className="input-field" rows="3" value={proj.description} onChange={(e) => handleArrayChange(index, e, 'projects')}></textarea>
-                  <label className="btn-outline flex-center" style={{ gap: '0.5rem', cursor: 'pointer', padding: '0.75rem' }}>
-                    <ImageIcon size={16} /> {proj.image ? 'Change Cover' : 'Upload Cover'}
+                <div key={index} className="glass-panel" style={{ padding: '1.5rem', display: 'grid', gap: '1rem', position: 'relative' }}>
+                  <button type="button" onClick={() => removeArrayItem(index, 'projects')} style={{ position: 'absolute', top: '1rem', right: '1rem', color: '#ef4444' }}><Trash2 size={18}/></button>
+                  <h3 style={{ fontSize: '1.1rem' }}>Project {index + 1}</h3>
+                  <input type="text" name="title" placeholder="Title" className="input-field" value={proj.title} onChange={(e) => handleArrayChange(index, e, 'projects')} />
+                  <input type="url" name="link" placeholder="Link" className="input-field" value={proj.link} onChange={(e) => handleArrayChange(index, e, 'projects')} />
+                  <textarea name="description" placeholder="Description..." className="input-field" rows="2" value={proj.description} onChange={(e) => handleArrayChange(index, e, 'projects')}></textarea>
+                  <label className="btn-outline flex-center" style={{ gap: '0.5rem', cursor: 'pointer', padding: '0.5rem' }}>
+                    <ImageIcon size={16} /> Cover
                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, (res) => {
                       const newProjects = [...formData.projects];
                       newProjects[index].image = res;
                       setFormData({ ...formData, projects: newProjects });
                     })} style={{ display: 'none' }} />
                   </label>
-                  {proj.image && <img src={proj.image} alt="Preview" style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: 'var(--radius-md)' }} />}
+                  {proj.image && <img src={proj.image} alt="P" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 'var(--radius-md)' }} />}
                 </div>
               ))}
-              <button type="button" onClick={() => addArrayItem('projects', { title: '', description: '', link: '', image: null })} className="glass-panel flex-center" style={{ minHeight: '300px', border: '2px dashed var(--glass-border)', background: 'transparent', flexDirection: 'column', gap: '1rem', color: 'var(--text-secondary)' }}>
-                <Plus size={40} />
-                <span style={{ fontSize: '1.2rem' }}>Add New Project</span>
+              <button type="button" onClick={() => addArrayItem('projects', { title: '', description: '', link: '', image: null })} className="glass-panel flex-center" style={{ minHeight: '200px', border: '2px dashed var(--glass-border)', background: 'transparent', flexDirection: 'column', gap: '1rem' }}>
+                <Plus size={30} /> Add Project
               </button>
             </div>
           </section>
 
-          <div style={{ position: 'sticky', bottom: '2rem', zIndex: 10 }}>
-            <button type="submit" className="btn-primary" style={{ width: '100%', padding: '1.5rem', fontSize: '1.5rem', boxShadow: '0 20px 50px var(--accent-glow)' }}>
-              🚀 Update My Public Portfolio
+          {/* Sticky Save Button */}
+          <div style={{ position: 'sticky', bottom: '1.5rem', zIndex: 10 }}>
+            <button type="submit" className="btn-primary flex-center" style={{ width: '100%', padding: '1.25rem', fontSize: '1.2rem', gap: '1rem', boxShadow: '0 10px 40px var(--accent-glow)' }}>
+              <Send size={20} /> Update Portfolio
             </button>
           </div>
         </form>
 
-        {/* Success Modal */}
+        {/* Modal */}
         {showModal && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-            <div className="glass-panel animate-fade-in" style={{ padding: '4rem 3rem', maxWidth: '550px', width: '90%', textAlign: 'center', background: 'var(--bg-surface)' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16,185,129,0.1)', color: '#10b981', marginBottom: '2rem', boxShadow: '0 0 30px rgba(16,185,129,0.3)' }}>
-                <CheckCircle size={40} />
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(3,7,18,0.9)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+            <div className="glass-panel animate-fade-in" style={{ padding: '2.5rem 1.5rem', maxWidth: '500px', width: '100%', textAlign: 'center' }}>
+              <CheckCircle size={50} color="#10b981" style={{ marginBottom: '1.5rem' }} />
+              <h2 style={{ marginBottom: '0.5rem' }}>Published!</h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Your professional site is now live.</p>
+              
+              <div className="mobile-flex-col" style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', padding: '0.5rem', borderRadius: 'var(--radius-md)', marginBottom: '2rem', gap: '0.5rem' }}>
+                <input type="text" readOnly value={publicLink} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--accent-primary)', padding: '0.5rem', fontSize: '0.9rem', width: '100%' }} />
+                <button onClick={handleCopy} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', width: 'auto' }}>{copied ? 'Copied' : 'Copy'}</button>
               </div>
-              <h2 style={{ marginBottom: '1rem', fontSize: '2rem' }}>Portfolio Live!</h2>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Your professional digital presence is now accessible worldwide.</p>
-              <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', padding: '0.5rem', marginBottom: '2.5rem' }}>
-                <input type="text" readOnly value={publicLink} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--accent-primary)', padding: '0.5rem 1rem', outline: 'none', fontSize: '1.1rem' }} />
-                <button onClick={handleCopy} className="btn-primary" style={{ padding: '0.75rem 1.5rem' }}>{copied ? 'Copied!' : 'Copy Link'}</button>
-              </div>
-              <div className="flex-center" style={{ gap: '1rem' }}>
-                <button onClick={() => setShowModal(false)} className="btn-outline" style={{ padding: '1rem 2rem' }}>Close Editor</button>
-                <a href={`/${formData.username}`} target="_blank" rel="noreferrer" className="btn-primary flex-center" style={{ gap: '0.5rem', padding: '1rem 2rem' }}>View Live Site <ExternalLink size={18} /></a>
+
+              <div className="mobile-flex-col" style={{ display: 'flex', gap: '1rem' }}>
+                <button onClick={() => setShowModal(false)} className="btn-outline" style={{ flex: 1 }}>Close</button>
+                <a href={`/${formData.username}`} target="_blank" rel="noreferrer" className="btn-primary" style={{ flex: 1 }}>View Site</a>
               </div>
             </div>
           </div>

@@ -38,6 +38,7 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -98,6 +99,7 @@ button {
   box-shadow: 0 4px 25px var(--accent-glow);
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 .btn-primary::after {
@@ -127,6 +129,7 @@ button {
   border: 1px solid rgba(255,255,255,0.2);
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 .btn-outline:hover {
@@ -264,4 +267,79 @@ button {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  :root {
+    --radius-lg: 1rem;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  .glass-panel {
+    padding: 1.5rem !important;
+  }
+
+  h1 { font-size: 2.5rem !important; }
+  h2 { font-size: 2rem !important; }
+  h3 { font-size: 1.5rem !important; }
+
+  .btn-primary, .btn-outline {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    width: 100%;
+  }
+
+  .bg-blob {
+    opacity: 0.3;
+    filter: blur(80px);
+  }
+
+  .blob-1 { width: 200px; height: 200px; }
+  .blob-2 { width: 250px; height: 250px; }
+  .blob-3 { width: 300px; height: 300px; }
+
+  /* Utilities for mobile */
+  .mobile-grid-1 {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  .mobile-flex-col {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .mobile-hide {
+    display: none !important;
+  }
+  
+  .mobile-text-center {
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 2rem !important; }
+  .glass-panel { padding: 1.25rem !important; }
+}
+
+/* Touch device adjustments */
+@media (hover: none) {
+  .card-premium:hover {
+    transform: none !important;
+    background: var(--glass-bg);
+  }
 }

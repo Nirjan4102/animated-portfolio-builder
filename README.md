@@ -4,18 +4,20 @@ Create a professional, animated, and high-conversion personal portfolio in minut
 
 ## ✨ Features
 
+- **OTP Authentication**: Secure and friction-less login/signup using One-Time Passwords sent to your email.
+- **Full Mobile Support**: Optimized for Android and iOS, ensuring a premium experience on any screen size.
 - **Dynamic Hero Section**: Personalized tagline, profile picture, and downloadable resume.
 - **Interactive Journey**: Animated timeline of your professional career.
 - **Skills Marquee**: A sleek, moving display of your core competencies.
 - **Project Showcase**: Beautifully rendered cards for your featured work.
 - **Supabase Integration**: Secure authentication and real-time data storage.
-- **Responsive Design**: Optimized for all devices—mobile, tablet, and desktop.
 - **Public URL**: Get a unique link (e.g., `your-site.com/username`) to share with recruiters.
+- **SEO Optimized**: Built-in meta tags, sitemap, and robots.txt for Google Search Console.
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 19, Vite, React Router 7
-- **Styling**: Vanilla CSS with Modern Glassmorphism
+- **Styling**: Vanilla CSS with Modern Glassmorphism & Responsive Media Queries
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
 - **Backend/Database**: Supabase (Auth & Postgres)
@@ -56,7 +58,6 @@ Create a professional, animated, and high-conversion personal portfolio in minut
    create policy "Allow public read access" on portfolios for select using (true);
 
    -- Allow authenticated users to upsert their own portfolio
-   -- (Note: In a production app, you'd want to check user_id)
    create policy "Allow auth upsert" on portfolios for all using (auth.role() = 'authenticated');
    ```
 

@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://animated-portfolio-builder.vercel.app/sitemap.xml
+Sitemap: https://portbuilder-7b833.web.app/sitemap.xml
+
+
