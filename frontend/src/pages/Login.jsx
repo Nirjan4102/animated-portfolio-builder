@@ -56,17 +56,44 @@ export default function Login({ isSignup }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
+      // For signInWithOtp, the type is usually 'magiclink'
+      // But if it's a new user and 'Confirm Email' is on, it might require 'signup'
+      let type = isSignup ? 'signup' : 'magiclink';
+      
+      console.log(`Verifying OTP with type: ${type}`);
+      let { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
-        type: 'magiclink'
+        type: type
       });
+
+      // Fallback: If signup failed, try magiclink (maybe user already exists)
+      // If magiclink failed and we are in signup, it might have been signup type
+      if (error) {
+        const otherType = type === 'signup' ? 'magiclink' : 'signup';
+        console.log(`Retrying with type: ${otherType}`);
+        const { data: retryData, error: retryError } = await supabase.auth.verifyOtp({
+          email,
+          token: otp,
+          type: otherType
+        });
+        
+        if (!retryError) {
+          data = retryData;
+          error = null;
+        }
+      }
+
       if (error) throw error;
+      
       if (data.session) {
         navigate('/dashboard');
+      } else {
+        alert('Verification successful! Please log in.');
+        navigate('/login');
       }
     } catch (error) {
-      alert('Verification failed: ' + error.message);
+      alert('Verification failed: ' + error.message + '\n\nMake sure you have configured OTP templates in your Supabase Dashboard.');
     } finally {
       setLoading(false);
     }
